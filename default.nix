@@ -9,6 +9,7 @@ pkgs.stdenv.mkDerivation {
 
   buildInputs = with pkgs; [
     python313
+    python313Packages.numpy
     python313Packages.librosa
     python313Packages.matplotlib
     python313Packages.seaborn
