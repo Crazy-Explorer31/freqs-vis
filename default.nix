@@ -9,6 +9,7 @@ pkgs.stdenv.mkDerivation {
 
   buildInputs = with pkgs; [
     python313
+    python313Packages.packaging
     python313Packages.lazy-loader
     python313Packages.numpy
     python313Packages.scipy
@@ -28,6 +29,7 @@ pkgs.stdenv.mkDerivation {
     #!${pkgs.bash}/bin/bash
     export PYTHONPATH="${with pkgs.python313Packages;
       lib.makeSearchPath "lib/python3.13/site-packages" [
+        packaging
         lazy-loader
         numpy
         scipy
