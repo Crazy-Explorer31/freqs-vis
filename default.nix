@@ -1,46 +1,29 @@
 {pkgs ? import <nixpkgs> {}}:
-pkgs.stdenv.mkDerivation {
+pkgs.python313Packages.buildPythonPackage {
   pname = "freqs-vis";
   version = "1.0.0";
 
   src = ./.;
+  format = "other";
 
-  dontUnpack = true;
+  dontBuild = true;
 
-  buildInputs = with pkgs; [
-    python313
-    python313Packages.pillow
-    python313Packages.packaging
-    python313Packages.lazy-loader
-    python313Packages.numpy
-    python313Packages.scipy
-    python313Packages.librosa
-    python313Packages.matplotlib
-    python313Packages.seaborn
+  propagatedBuildInputs = with pkgs.python313Packages; [
+    librosa
+    matplotlib
+    seaborn
   ];
 
   installPhase = ''
-    mkdir -p $out/bin $out/lib/python3.13/site-packages
+    mkdir -p $out/${pkgs.python313.sitePackages}
+    cp -r src $out/${pkgs.python313.sitePackages}/
 
-    # Копируем исходники
-    cp -r $src/src $out/lib/python3.13/site-packages/
-
-    # Создаем враппер со всеми зависимостями в PYTHONPATH
+    mkdir -p $out/bin
     cat > $out/bin/freqs-vis <<EOF
-    #!${pkgs.bash}/bin/bash
-    export PYTHONPATH="${with pkgs.python313Packages;
-      lib.makeSearchPath "lib/python3.13/site-packages" [
-        pillow
-        packaging
-        lazy-loader
-        numpy
-        scipy
-        librosa
-        matplotlib
-        seaborn
-      ]}:\$PYTHONPATH"
-    export PYTHONPATH=$out/lib/python3.13/site-packages:\$PYTHONPATH
-    exec ${pkgs.python313}/bin/python -m src.main "\$@"
+    #!${pkgs.python313}/bin/python
+    from src.main import main
+    import sys
+    sys.exit(main())
     EOF
     chmod +x $out/bin/freqs-vis
   '';
