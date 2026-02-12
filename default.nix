@@ -17,8 +17,13 @@
       seaborn
     ];
   };
+  pythonEnv = pkgs.python313.buildEnv.override {
+    extraLibs = [pythonPackage];
+    ignoreCollisions = true;
+  };
 in
   pythonPackage.overrideAttrs (old: {
+    buildInputs = [pythonEnv];
     postInstall =
       (old.postInstall or "")
       + ''
