@@ -41,6 +41,12 @@ in
 
     buildInputs = [pythonEnv];
 
+    preInstall = ''
+      # Убеждаемся, что src скопирован
+      mkdir -p $out/lib/python3.13/site-packages
+      cp -r src $out/lib/python3.13/site-packages/
+    '';
+
     installPhase = ''
       mkdir -p $out/bin
       cat > $out/bin/${name} <<EOF
