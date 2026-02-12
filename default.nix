@@ -2,6 +2,7 @@
   pkgs ? import <nixpkgs> {},
   srcDir ? ./.,
   subdir ? "",
+  self,
 }: let
   theSource = srcDir;
 
@@ -9,7 +10,7 @@
     pname = "freqs-vis";
     version = "1.0.0";
 
-    src = "${theSource}/${subdir}";
+    src = self;
     format = "setuptools";
 
     nativeBuildInputs = [
