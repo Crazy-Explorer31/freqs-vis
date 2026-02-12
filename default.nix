@@ -1,37 +1,37 @@
-{pkgs ? import <nixpkgs> {}}: let
-  pythonPackage = pkgs.python313Packages.buildPythonPackage {
-    pname = "freqs-vis";
-    version = "1.0.0";
+{pkgs ? import <nixpkgs> {}}:
+pkgs.stdenv.mkDerivation {
+  pname = "freqs-vis";
+  version = "1.0.0";
 
-    src = ./.;
-    format = "setuptools";
+  src = ./.;
 
-    nativeBuildInputs = with pkgs.python313Packages; [
-      setuptools
-      wheel
-    ];
+  dontUnpack = true;
 
-    propagatedBuildInputs = with pkgs.python313Packages; [
-      librosa
-      matplotlib
-      seaborn
-    ];
+  buildInputs = with pkgs; [
+    python313
+    python313Packages.librosa
+    python313Packages.matplotlib
+    python313Packages.seaborn
+  ];
+
+  installPhase = ''
+    mkdir -p $out/bin $out/lib/python3.13/site-packages
+
+    # Копируем исходники
+    cp -r $src/src $out/lib/python3.13/site-packages/
+
+    # Создаем враппер
+    cat > $out/bin/freqs-vis <<EOF
+    #!${pkgs.bash}/bin/bash
+    export PYTHONPATH=$out/lib/python3.13/site-packages:\$PYTHONPATH
+    exec ${pkgs.python313}/bin/python -m src.main "\$@"
+    EOF
+    chmod +x $out/bin/freqs-vis
+  '';
+
+  meta = with pkgs.lib; {
+    description = "Audio frequencies visualization tool";
+    license = licenses.mit;
+    mainProgram = "freqs-vis";
   };
-  pythonEnv = pkgs.python313.buildEnv.override {
-    extraLibs = [pythonPackage];
-    ignoreCollisions = true;
-  };
-in
-  pythonPackage.overrideAttrs (old: {
-    buildInputs = [pythonEnv];
-    postInstall =
-      (old.postInstall or "")
-      + ''
-        mkdir -p $out/bin
-        cat > $out/bin/freqs-vis <<EOF
-        #!${pkgs.bash}/bin/bash
-        exec ${pythonPackage}/bin/python -m src.main "\$@"
-        EOF
-        chmod +x $out/bin/freqs-vis
-      '';
-  })
+}
